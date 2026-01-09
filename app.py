@@ -63,12 +63,12 @@ if st.button("Run", key="button_run"):
         st.write("Clusters: " + str(n_clusters))
         st.write("Random State: " + str(random_state))
 
-        df = pd.read_csv(os.path.join("datasets", filename + ".csv"))
+        df = pd.read_csv(os.path.join("datasets", dataset))
         config = {
             "scaler": scaler_method,
             "clusters": n_clusters,
             "random_state": random_state
         }
-        run_id = run_clustering(df, config)
+        #run_id = run_clustering(df, config)
 
 
