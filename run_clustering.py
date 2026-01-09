@@ -1,4 +1,3 @@
-import pandas as pd
 import json
 import os
 import hashlib
@@ -12,22 +11,6 @@ from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bo
 
 
 def run_clustering(df, df1, df2, config, runs_dir="runs"):
-    """
-    Encapsulates the full clustering pipeline for a single run.
-
-    Args:
-        df (pd.DataFrame): Clean, concatenated input DataFrame with features.
-        df1 (pd.DataFrame): Original dataset_A.csv for copying.
-        df2 (pd.DataFrame): Original dataset_B.csv for copying.
-        config (dict): Configuration dictionary with:
-            - 'preprocessing': str ('StandardScaler', 'MinMaxScaler', 'RobustScaler')
-            - 'model': dict with 'name': 'KMeans', 'n_clusters': int or None, 'init': str, 'n_init': int, 'max_iter': int, 'random_state': int
-            - 'features_used': list of str (e.g., ['feature_1', ...])
-        runs_dir (str): Root directory for runs.
-
-    Returns:
-        dict: Full metadata including run_id, timestamp, config, metrics, file_paths.
-    """
     # 1. Generate unique run_id
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     config_str = json.dumps(config, sort_keys=True)
@@ -150,9 +133,9 @@ def run_clustering(df, df1, df2, config, runs_dir="runs"):
         },
         "metrics": metrics,
         "file_paths": {
-            "output_csv": f"{run_id}/clustered_output.csv",  # Relative to runs/
-            "plot": f"{run_id}/clusters_plot.png",
-            "model_snapshot": f"{run_id}/model.joblib"
+            "output_csv": "clustered_output.csv",  # Basename only
+            "plot": "clusters_plot.png",
+            "model_snapshot": "model.joblib"
         }
     }
 
