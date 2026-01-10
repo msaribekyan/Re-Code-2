@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+import joblib
 import re
 import os
+import plotly.express as px
 from run_clustering import run_clustering
 
 datasets = os.listdir("datasets")
@@ -77,6 +80,26 @@ if st.button("Run", key="button_run"):
                 "random_state": random_state,
             },
         }
-        run_id = run_clustering(df, df1, df2, config)
+        metadata = run_clustering(df, df1, df2, config)
+        
+        run_id = metadata["run_id"]
+
+        silhouette_score = metadata["metrics"]["silhouette_score"]
+        
+        pca_df = pd.read_csv(os.path.join("runs", run_id, "pca_df.csv"))
+
+        fig = px.scatter(
+            x=pca_df["PC1"],
+            y=pca_df["PC2"],
+            color="Cluster " + pca_df["cluster"].astype(str),
+            title='K-Means Clusters',
+            labels={'x':'PCA1', 'y':'PCA2', 'color':'Cluster'}
+        )
+
+        # Plot cluster centers
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.write("Silhouette score: " + str(silhouette_score))
+
 
 

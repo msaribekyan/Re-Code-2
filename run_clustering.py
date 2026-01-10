@@ -1,6 +1,7 @@
 import json
 import os
 import hashlib
+import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 import joblib
@@ -102,6 +103,14 @@ def run_clustering(df, df1, df2, config, runs_dir="runs"):
     plt.savefig(plot_path, dpi=300)
     plt.close()
 
+    pca_df = pd.DataFrame({
+        "PC1": X_2d[:, 0],
+        "PC2": X_2d[:, 1],
+        "cluster": cluster_labels
+    })
+    pca_df_path = os.path.join(output_dir, "pca_df.csv")
+    pca_df.to_csv(pca_df_path, index=False)   
+ 
     # 7. Save everything
     # CSV
     csv_path = os.path.join(output_dir, "clustered_output.csv")
