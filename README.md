@@ -1,4 +1,4 @@
-**The general idea of the project: **
+**The general idea of the project:**
 It is a tool for the automatic detection of "latent mood groups" in music through unsupervised learning. The project analyzes the numerical characteristics of songs or listening sessions (audio + behavioral data), grouping them into clusters without predefined labels (such as "happy/sad"). The goal is to help with recommendations: e.g., "This session is like an 'energetic playlist' — suggest similar tracks." It is useful for music services (Spotify-like), where moods are not always explicit, but affect user engagement. Why unsupervised? Because moods are subjective — there are no "correct" labels, the model finds patterns on its own (like clustering stars in the sky).
 
 
