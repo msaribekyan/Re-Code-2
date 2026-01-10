@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 import joblib
 import re
 import os
+import json
 import plotly.express as px
 from run_clustering import run_clustering
 
 datasets = os.listdir("datasets")
+runs = os.listdir("runs")
 
 def upload(filename, file, file_number):
     if not filename:
@@ -39,50 +41,9 @@ def upload(filename, file, file_number):
 
     return filename + ".csv"
 
-
-st.title("Re-Code: Cluster")
-
-st.header("New run")
-st.write("Select pre-processing and model parameters, upload or select the input dataset and cluster the data.")
-
-scaler_method = st.selectbox("Scaler", ["StandardScaler", "MinMaxScaler", "RobustScaler"])
-n_clusters = st.slider("Number of clusters", min_value=2, max_value=10)
-random_state = st.slider("Random state", value=42, min_value=0, max_value=100)
-st.write("Select which features to use for model training")
-dataset_method = st.selectbox("Dataset", ["Select dataset from list", "Upload dataset"])
-
-if dataset_method == "Upload dataset":
-    filename_A = st.text_input("Dataset A name")
-    file_A = st.file_uploader("Upload dataset A",type=["csv"])
-    filename_B = st.text_input("Dataset B name")
-    file_B = st.file_uploader("Upload dataset B",type=["csv"])
-elif dataset_method == "Select dataset from list":
-    dataset_A = st.selectbox("Select dataset A", datasets)
-    dataset_B = st.selectbox("Select dataset B", datasets)
-
-if st.button("Run", key="button_run"):
-    if dataset_method == "Upload dataset":
-        dataset_A = upload(filename_A, file_A, "A")
-        dataset_B = upload(filename_B, file_B, "B")
-    if dataset_A is None or dataset_B is None:
-        st.write("Dataset selection error")
-    elif dataset_A == dataset_B:
-        st.write("Selected datasets can not be the same")
-    else:
-        df1 = pd.read_csv(os.path.join("datasets", dataset_A))
-        df2 = pd.read_csv(os.path.join("datasets", dataset_B))
-        
-        df = pd.concat([df1, df2], ignore_index=True)
-        config = {
-            "preprocessing": scaler_method,
-            "model": {
-                "n_clusters": n_clusters,
-                "random_state": random_state,
-            },
-        }
-        metadata = run_clustering(df, df1, df2, config)
-        
-        run_id = metadata["run_id"]
+def show_run(run_id):
+        with open(os.path.join("runs", run_id, "run_metadata.json"), 'r') as f:
+            metadata = json.load(f)
 
         silhouette_score = metadata["metrics"]["silhouette_score"]
         
@@ -97,9 +58,82 @@ if st.button("Run", key="button_run"):
         )
 
         # Plot cluster centers
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig)
 
         st.write("Silhouette score: " + str(silhouette_score))
 
+        st.write("Download files")
+        with open(os.path.join("runs", run_id, "clustered_output.csv"), "rb") as file:
+            st.download_button(label="Download clustered output",
+                               data=file,
+                               file_name="clustered_output.csv",
+                               mime="text/csv"
+            )
+        with open(os.path.join("runs", run_id, "clusters_plot.png"), "rb") as file:
+            st.download_button(label="Download cluster plot",
+                               data=file,
+                               file_name="clusters_plot.png",
+                               mime="image/png"
+            )
 
+def page_new_run():
+    st.header("New run")
+    st.write("Select pre-processing and model parameters, upload or select the input dataset and cluster the data.")
 
+    scaler_method = st.selectbox("Scaler", ["StandardScaler", "MinMaxScaler", "RobustScaler"])
+    n_clusters = st.slider("Number of clusters", min_value=2, max_value=10)
+    random_state = st.slider("Random state", value=42, min_value=0, max_value=100)
+    st.write("Select which features to use for model training")
+    dataset_method = st.selectbox("Dataset", ["Select dataset from list", "Upload dataset"])
+
+    if dataset_method == "Upload dataset":
+        filename_A = st.text_input("Dataset A name")
+        file_A = st.file_uploader("Upload dataset A",type=["csv"])
+        filename_B = st.text_input("Dataset B name")
+        file_B = st.file_uploader("Upload dataset B",type=["csv"])
+    elif dataset_method == "Select dataset from list":
+        dataset_A = st.selectbox("Select dataset A", datasets)
+        dataset_B = st.selectbox("Select dataset B", datasets)
+
+    if st.button("Run", key="button_run"):
+        if dataset_method == "Upload dataset":
+            dataset_A = upload(filename_A, file_A, "A")
+            dataset_B = upload(filename_B, file_B, "B")
+        if dataset_A is None or dataset_B is None:
+            st.write("Dataset selection error")
+        elif dataset_A == dataset_B:
+            st.write("Selected datasets can not be the same")
+        else:
+            df1 = pd.read_csv(os.path.join("datasets", dataset_A))
+            df2 = pd.read_csv(os.path.join("datasets", dataset_B))
+        
+            df = pd.concat([df1, df2], ignore_index=True)
+            config = {
+                "preprocessing": scaler_method,
+                "model": {
+                    "n_clusters": n_clusters,
+                    "random_state": random_state,
+                },
+            }
+            metadata = run_clustering(df, df1, df2, config)
+            run_id = metadata["run_id"]
+
+            show_run(run_id)
+
+def view_run():
+    st.header("View run")
+    st.write("Select run to get plot and metrics")
+
+    run_id = st.selectbox("Run", runs)
+    show_run(run_id)
+
+st.title("Re-Code: Cluster")
+
+page = st.selectbox("Page", ["New run", "View run", "Compare runs"])
+
+if page == "New run":
+    page_new_run()
+elif page == "View run":
+    view_run()
+elif page == "Compare runs":
+    pass
