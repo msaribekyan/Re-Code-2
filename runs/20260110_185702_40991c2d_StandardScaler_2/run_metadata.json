@@ -1,0 +1,34 @@
+{
+  "run_id": "20260110_185702_40991c2d_StandardScaler_2",
+  "timestamp": "2026-01-10T18:57:02.807014",
+  "config": {
+    "preprocessing": "StandardScaler",
+    "model": {
+      "name": "KMeans",
+      "n_clusters": 2,
+      "init": "k-means++",
+      "n_init": 10,
+      "max_iter": 300,
+      "random_state": 42
+    },
+    "features_used": [
+      "feature_1",
+      "feature_2",
+      "feature_3",
+      "feature_4",
+      "feature_5"
+    ]
+  },
+  "metrics": {
+    "silhouette_score": 0.19614559780682542,
+    "calinski_harabasz_score": 229.0629599024895,
+    "davies_bouldin_score": 1.9817720399867245,
+    "inertia": 4066.620999134825,
+    "n_clusters": 2
+  },
+  "file_paths": {
+    "output_csv": "clustered_output.csv",
+    "plot": "clusters_plot.png",
+    "model_snapshot": "model.joblib"
+  }
+}
