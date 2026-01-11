@@ -41,12 +41,10 @@ def upload(filename, file, file_number):
 
     return filename + ".csv"
 
-def show_run(run_id):
+def show_run(run_id, key):
         with open(os.path.join("runs", run_id, "run_metadata.json"), 'r') as f:
             metadata = json.load(f)
 
-        silhouette_score = metadata["metrics"]["silhouette_score"]
-        
         pca_df = pd.read_csv(os.path.join("runs", run_id, "pca_df.csv"))
 
         fig = px.scatter(
@@ -57,26 +55,35 @@ def show_run(run_id):
             labels={'x':'PCA1', 'y':'PCA2', 'color':'Cluster'}
         )
 
-        # Plot cluster centers
-        st.plotly_chart(fig)
+        st.write("Preprocessing: " + metadata["config"]["preprocessing"])
+        st.write("Model: " + metadata["config"]["model"]["name"])
+        st.write("Clusters: " + str(metadata["config"]["model"]["n_clusters"]))
+        st.write("Random State: " + str(metadata["config"]["model"]["random_state"]))
+        st.plotly_chart(fig, key="fig"+key)
 
-        st.write("Silhouette score: " + str(silhouette_score))
+        st.write("Silhouette score: " + str(metadata["metrics"]["silhouette_score"]))
+        st.write("Calinski Harabasz score: " + str(metadata["metrics"]["calinski_harabasz_score"]))
+        st.write("Davies Bouldin score: " + str(metadata["metrics"]["davies_bouldin_score"]))
+        st.write("Inertia: " + str(metadata["metrics"]["inertia"]))
 
         st.write("Download files")
         with open(os.path.join("runs", run_id, "clustered_output.csv"), "rb") as file:
             st.download_button(label="Download clustered output",
                                data=file,
                                file_name="clustered_output.csv",
-                               mime="text/csv"
+                               mime="text/csv",
+                               key="dow1"+key
             )
         with open(os.path.join("runs", run_id, "clusters_plot.png"), "rb") as file:
             st.download_button(label="Download cluster plot",
                                data=file,
                                file_name="clusters_plot.png",
-                               mime="image/png"
+                               mime="image/png",
+                               key="dow2"+key
             )
 
 def page_new_run():
+    st.set_page_config(layout="centered")
     st.header("New run")
     st.write("Select pre-processing and model parameters, upload or select the input dataset and cluster the data.")
 
@@ -118,14 +125,29 @@ def page_new_run():
             metadata = run_clustering(df, df1, df2, config)
             run_id = metadata["run_id"]
 
-            show_run(run_id)
+            show_run(run_id, "calc")
 
 def view_run():
+    st.set_page_config(layout="centered")
     st.header("View run")
     st.write("Select run to get plot and metrics")
 
     run_id = st.selectbox("Run", runs)
-    show_run(run_id)
+    show_run(run_id, "view")
+
+def compare_runs():
+    st.set_page_config(layout="wide")
+    st.header("Compare runs")
+    num_comp = st.slider("Number of runs to compare", min_value=2, max_value=4)
+    cols = st.columns(num_comp)
+    for i, col in enumerate(cols):
+        with col:
+            st.write("Select run to get plot and metrics")
+            
+            run_id = st.selectbox("Run", runs, key="sel" + str(i))
+            if run_id is not None:
+                runs.remove(run_id)
+                show_run(run_id, "run" + str(i))
 
 st.title("Re-Code: Cluster")
 
@@ -136,4 +158,4 @@ if page == "New run":
 elif page == "View run":
     view_run()
 elif page == "Compare runs":
-    pass
+    compare_runs()
