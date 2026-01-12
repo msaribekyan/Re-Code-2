@@ -138,7 +138,8 @@ def view_run():
     st.write("Select run to get plot and metrics")
 
     run_id = st.selectbox("Run", runs)
-    show_run(run_id, "view")
+    if run_id is not None:
+        show_run(run_id, "view")
 
 def compare_runs():
     st.set_page_config(layout="wide")
