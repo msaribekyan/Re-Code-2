@@ -8,7 +8,12 @@ import json
 import plotly.express as px
 from run_clustering import run_clustering
 
+if not os.path.exists("datasets"):
+    os.makedirs("datasets")
 datasets = os.listdir("datasets")
+
+if not os.path.exists("runs"):
+    os.makedirs("runs")
 runs = os.listdir("runs")
 
 def upload(filename, file, file_number):
