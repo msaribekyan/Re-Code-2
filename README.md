@@ -33,7 +33,67 @@ Application: Recommendations (cluster → playlist), A/B tests (compare runs), i
 The project is an unsupervised explorer: It finds "invisible connections" in music as a psychological profile of a playlist.
 
 # How to run
+## For Web UI
 To run the web interface, make sure the streamlit is installed and run
 ```
 streamlit run app.py
+```
+## For CLI
+Run in the terminal:
+```
+python datacheck.py cluster --clusters 4
+```
+
+After that you can check /runs/ directory
+clustered_output.csv: Your songs + the 'cluster' column (0=quiet, 1=energetic or something like that).
+clusters_plot.png
+run_metadata.json: "Passport" — config, metrics (silhouette=0.55 — "are groups good?"), file paths.
+model.joblib — for later
+
+python cluster_feature_profiles.py --input_csv runs/{run_id}/clustered_output.csv
+
+You can create configs.json for multiple run like this:
+```
+[
+  {
+    "preprocessing": "StandardScaler",
+    "model": {"n_clusters": 3, "init": "k-means++", "n_init": 10, "max_iter": 300, "random_state": 42},
+    "features_used": ["feature_1", "feature_2", "feature_3", "feature_4", "feature_5"]
+  },
+  {
+    "preprocessing": "MinMaxScaler",
+    "model": {"n_clusters": null},  // auto-k!
+    "features_used": ["feature_1", "feature_2", "feature_3", "feature_4", "feature_5"]
+  },
+  {
+    "preprocessing": "RobustScaler",
+    "model": {"n_clusters": 5, "random_state": 123},
+    "features_used": ["feature_1", "feature_2"]  // Только 2 фичи для теста
+  }
+]
+```
+
+And then do follow:
+```
+python datacheck.py cluster --config_file configs.json
+```
+
+To compare:
+```
+python compare_runs.py run_id_1 run_id_2
+```
+
+After first or any another run you can save it's snapshot:
+```
+python datacheck.py save_snapshot {run_id}} Mood_v4
+```
+
+So here predict on new dataset without learning: 
+```
+python datacheck.py load_snapshot Mood_v1 --predict_csv new_data.csv
+```
+
+And this:
+```
+python cluster_feature_profiles.py --input_csv active_run/predicted_clusters.csv
 ```
